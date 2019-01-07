@@ -1,0 +1,24 @@
+<template>
+  <single-choice :q.sync="q"></single-choice>
+</template>
+
+<script>
+import wepy from 'wepy'
+import singleChoice from './singleChoice'
+export default class Layer extends wepy.component{
+  props = {
+    q:Object
+  }
+  components={
+    "single-choice":singleChoice
+  }
+  onLoad(){
+    console.log(this.q);
+    this.$apply()
+  }
+}
+</script>
+
+<style>
+
+</style>

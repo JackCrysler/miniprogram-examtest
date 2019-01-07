@@ -1,0 +1,174 @@
+<template>
+  <view class="page question">
+    <view class="page__hd">
+      <view class="page__title"></view>
+    </view>
+    <view class="page__bd">
+      <view class="weui-cells__title">选择题目范围：</view>
+      <view class="weui-cells weui-cells_after-title">
+      <view class="weui-cell weui-cell_input">
+        <view class="weui-cell__hd">
+          <view class="weui-label">专业：</view>
+        </view>
+        <view class="weui-cell__bd">
+          <picker bindchange="bindPickerChange" value="{{index}}" range="{{courses}}">
+              <view class="weui-cell weui-cell_access" hover-class="weui-cell_active">
+                <view class="weui-cell__bd">{{selected_course.cnname}}</view>
+                <view class="weui-cell__ft weui-cell__ft_in-access"></view>
+              </view>
+          </picker>
+        </view>
+      </view>
+      <view class="weui-cell weui-cell_input">
+        <view class="weui-cell__hd">
+          <view class="weui-label">开始单元：</view>
+        </view>
+        <view class="weui-cell__bd">
+          <picker bindchange="bindStartChange" value="{{index}}" range="{{units}}">
+                <view class="weui-cell weui-cell_access" hover-class="weui-cell_active">
+                <view class="weui-cell__bd">{{select_start_unit}}</view>
+                <view class="weui-cell__ft weui-cell__ft_in-access"></view>
+              </view>
+            </picker>
+        </view>
+      </view>
+      <view class="weui-cell weui-cell_input">
+        <view class="weui-cell__hd">
+          <view class="weui-label">结束单元：</view>
+        </view>
+        <view class="weui-cell__bd">
+          <picker bindchange="bindEndChange" value="{{index}}" range="{{units}}">
+                <view class="weui-cell weui-cell_access" hover-class="weui-cell_active">
+                <view class="weui-cell__bd">{{select_end_unit}}</view>
+                <view class="weui-cell__ft weui-cell__ft_in-access"></view>
+              </view>
+            </picker>
+        </view>
+      </view>
+      <view class="weui-cell weui-cell_input">
+        <view class="weui-cell__hd">
+          <view class="weui-label">试题类型：</view>
+        </view>
+        <view class="weui-cell__bd">
+          <picker bindchange="bindTypeChange" value="{{index}}" range="{{type_arr}}">
+                <view class="weui-cell weui-cell_access" hover-class="weui-cell_active">
+                <view class="weui-cell__bd">{{select_type}}</view>
+                <view class="weui-cell__ft weui-cell__ft_in-access"></view>
+              </view>
+            </picker>
+        </view>
+      </view>
+
+    </view>
+    <view class="query-box">
+      <button type="primary" @tap="query">查询</button>
+    </view>
+    </view>
+
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy';
+let arr =[]
+for(let i=1; i<21; i++){
+  arr.push(i+"单元")
+}
+export default class questions extends wepy.page {
+  data = {
+    cid: '',
+    courses:[],
+    course_data:[],
+    selected_course: null,
+    units: arr,
+    type_arr: ["全部","0-判断","1-单选","2-多选","3-填空（人工判卷）","4-问答","5-填空（自动判卷）"],
+    select_start_unit: '1单元',
+    select_end_unit: '3单元',
+    select_type: '全部'
+  }
+  methods={
+    bindPickerChange(e){
+      this.selected_course = this.course_data[e.detail.value]
+    },
+    bindStartChange(e){
+      this.select_start_unit = this.units[e.detail.value]
+    },
+    bindEndChange(e){
+      this.select_end_unit = this.units[e.detail.value]
+    },
+    bindTypeChange(e){
+      this.select_type = this.type_arr[e.detail.value]
+    },
+    query(){
+
+      wx.showLoading()
+
+      let params = {
+        'courseId': this.selected_course.id,
+        'endunit': this.select_end_unit.slice(0,1),
+        'startunit': this.select_start_unit.slice(0,1)
+      }
+      if(this.select_type!="全部"){
+        params['stem_type'] = this.select_type
+      }
+      wepy.request({
+        url:"https://miniapp.yunkaikt.com/exam/front/getQuestionRandom",
+        data:params
+      }).then(res=>{
+        wx.hideLoading()
+        let app = getApp()
+        app.questions = res.data.data.questionIdArr
+        wx.navigateTo({
+          url:"./list"
+        })
+      })
+    }
+  }
+  onLoad(options) {
+    let app = getApp()
+    let course = app.course;
+    let id = options.id;
+    //根据id过滤出来的跟学院相关的课程
+    this.course_data = course.filter((item)=>{
+      return item.parent_id == id
+    })
+    //初始化
+    this.selected_course = this.course_data[0];
+    //准备picker展示数据
+    this.courses = this.course_data.filter((item)=>{
+      return item.parent_id == id
+    }).map(item=>item.cnname)
+
+    if(course.length==0){
+      wx.showModel({
+        title:'提示',
+        content:"没有课程信息，请返回重试"
+      })
+    }
+    wx.setNavigationBarTitle({
+      title: options.college
+    });
+    this.cid = options.id;
+  }
+}
+</script>
+
+<style>
+.question{
+  position: relative;
+  height: 100%;
+}
+.query-box{
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding: 50rpx;
+  box-sizing: border-box;
+}
+.weui-label{
+  text-align: right;
+}
+.weui-cell__bd{
+  text-align: right;
+}
+</style>

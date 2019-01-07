@@ -1,0 +1,125 @@
+<style lang="less">
+.nick-name{
+  line-height: 90rpx;
+  text-indent: 20rpx;
+  border-top: 5px solid #f5f5f5;
+  margin-bottom: 1px;
+  display:flex;
+  align-items: center;
+}
+
+</style>
+<template>
+  <view class="page">
+    <view class="page__hd">
+      <view class="page__title">
+        <view class="nick-name">用户信息：
+          <text wx:if="{{userInfo!='获取用户信息'}}">{{userInfo}}</text>
+          <button wx:if="{{userInfo=='获取用户信息'}}" @getuserinfo="getUserInfo" class="weui-btn" size="mini" type="default" plain="true" open-type="getUserInfo" type="default">{{userInfo}}</button>
+        </view>
+      </view>
+    </view>
+    <view class="page__bd">
+      <view class="weui-panel weui-panel_access">
+        <view class="weui-panel__hd">选择学院</view>
+        <view class="weui-panel__bd">
+          <repeat for="{{colleges}}">
+            <navigator
+              url="./questions?college={{item.cnname}}&id={{item.id}}"
+              class="weui-media-box weui-media-box_appmsg"
+              hover-class="weui-cell_active"
+            >
+              <view class="weui-media-box__hd weui-media-box__hd_in-appmsg">
+                <image
+                  class="weui-media-box__thumb"
+                  src="{{icon60}}"
+                />
+              </view>
+              <view class="weui-media-box__bd weui-media-box__bd_in-appmsg">
+                <view class="weui-media-box__title">{{item.cnname}}</view>
+                <view class="weui-media-box__desc">题目：{{item.questions}}</view>
+              </view>
+            </navigator>
+          </repeat>
+          <view class="weui-cells__title" wx:if="{{colleges.length==0}}">未获取到数据</view>
+        </view>
+        <view class="weui-panel__ft">
+          <view class="weui-cell weui-cell_access weui-cell_link">
+            <view class="weui-cell__bd">查看更多</view>
+            <view class="weui-cell__ft weui-cell__ft_in-access"></view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy';
+var base64 = require('../images/base64');
+export default class Index extends wepy.page {
+  config = {
+    navigationBarTitleText: '刷题系统'
+  }
+  components = {}
+
+  data = {
+    icon20: base64.icon20,
+    icon60: base64.icon60,
+    userInfo: '获取用户信息',
+    colleges: []
+  }
+
+  computed = {
+    now() {
+      return +new Date();
+    }
+  }
+
+  methods = {
+    getUserInfo(e) {
+      let userInfo = JSON.parse(e.detail.rawData)
+
+        if (userInfo) {
+          this.userInfo = userInfo.nickName;
+          this.$apply();
+        }
+      }
+  };
+
+  events = {};
+  authInfo(){
+    wx.getSetting({
+      success(res){
+        console.log(res)
+        if(!res.authSetting["scope.userInfo"]){
+
+        }
+      }
+    })
+  }
+  onLoad() {
+    //this.authInfo()
+    wx.showLoading({
+      title:"正在获取数据"
+    });
+    wepy.request('https://miniapp.yunkaikt.com/exam/front/selectClass').then(
+      (res) => {
+        let app = getApp();
+        app.course = res.data.data.course;
+        this.colleges = res.data.data.college;
+        wx.hideLoading();
+        this.$apply();
+      },
+      err => {
+        wx.showModal({
+          title: '提示',
+          content: '服务器出错，请稍后重试'
+        });
+        wx.hideLoading();
+        console.log(err);
+      }
+    );
+  }
+}
+</script>

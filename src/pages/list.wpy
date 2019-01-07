@@ -1,0 +1,175 @@
+<template>
+<view class="page" id="list">
+  <view class="page__hd"></view>
+  <view class="page__bd">
+    <view>
+      <view class="weui-cells__title">{{qindex+1}}、 {{list[qindex].stem}}</view>
+      <view class="weui-cells weui-cells_after-title">
+        <radio-group bindchange="radioChange" wx:if="{{qtype==1}}">
+          <label class="weui-cell weui-check__label" wx:for="{{options}}" wx:key="{{item.id}}">
+              <radio value="{{item.value}}" checked="{{item.checked}}"/>
+              <view class="weui-cell__bd">{{item.name}}</view>
+          </label>
+        </radio-group>
+        <checkbox-group bindchange="checkboxChange" wx:elif="{{qtype==2}}">
+            <label class="weui-cell weui-check__label" wx:for="{{options}}" wx:key="{{item.id}}">
+              <checkbox value="{{item.value}}" checked="{{item.checked}}"/>
+              <view class="weui-cell__bd">{{item.name}}</view>
+            </label>
+        </checkbox-group>
+        <view class="weui-cell" wx:else>
+            <view class="weui-cell__bd">
+                <textarea @input="textInput" class="weui-textarea" placeholder="请输入文本" style="height: 3.3em" />
+                <view class="weui-textarea-counter">0/200</view>
+            </view>
+        </view>
+      </view>
+    </view>
+    <view class="weui-footer">
+      <view class="button-sp-area">
+        <button class="weui-btn mini-btn" plain="true" type="default" size="mini" @tap="prevq">上一题</button>
+        <button class="weui-btn mini-btn" plain="true" type="primary" size="mini">答题卡</button>
+        <button class="weui-btn mini-btn" plain="true" type="warn" size="mini">提交</button>
+        <button class="weui-btn mini-btn" plain="true" type="default" size="mini" @tap="nextq">下一题</button>
+      </view>
+    </view>
+  </view>
+</view>
+</template>
+
+<script>
+import wepy from 'wepy'
+import layer from '../components/layer'
+
+export default class List extends wepy.page{
+  data={
+    list:[],
+    qindex: 0,
+    options:[],
+    qtype:null
+  }
+  setOption(){
+    let arr = []
+    let alpha=["A","B","C","D","E","F"];
+    let stem_type = this.list[this.qindex].stem_type;
+
+    if(stem_type=="0-判断" || stem_type=="1-单选"){
+      this.qtype = 1
+    }else if(stem_type=="2-多选"){
+      this.qtype = 2
+    }else{
+      this.qtype = 3
+    }
+    switch (stem_type) {
+      case "0-判断":
+        arr[0]={value: "A",name:"对",checked: false};
+        arr[1]={value: "B",name:"错",checked: false};
+        break;
+      case "1-单选":
+          for(let i=1;i<7;i++){
+          let option = this.list[this.qindex]['option_'+i]
+            if(option!='undefined' && option!='' && option!=null){
+              arr.push({
+                name:option,
+                value: alpha[i-1],
+                checked: false
+              })
+            }
+          }
+        break;
+      case "2-多选":
+        for(let i=1;i<7;i++){
+          let option = this.list[this.qindex]['option_'+i]
+            if(option!='undefined' && option!='' && option!=null){
+              arr.push({
+                name:option,
+                value: alpha[i-1],
+                checked: false
+              })
+            }
+          }
+        break;
+      case "3-填空（人工判卷）":
+
+        break;
+      case "4-问答":
+
+        break;
+      case "5-填空（自动判卷）":
+
+        break;
+
+      default:
+        break;
+    }
+
+    this.options = arr;
+  }
+  setAnswer(answer){
+    let q = this.list[this.qindex]
+    q.answer = answer
+    this.list[this.qindex] = q
+
+  }
+  methods={
+    radioChange(e){
+      var radioItems = this.options;
+        for (var i = 0, len = radioItems.length; i < len; ++i) {
+            radioItems[i].checked = radioItems[i].value == e.detail.value;
+        }
+        this.options= radioItems
+    },
+    checkboxChange(e){
+        var checkboxItems = this.options, values = e.detail.value;
+        for (var i = 0, lenI = checkboxItems.length; i < lenI; ++i) {
+            checkboxItems[i].checked = false;
+            for (var j = 0, lenJ = values.length; j < lenJ; ++j) {
+                if(checkboxItems[i].value == values[j]){
+                    checkboxItems[i].checked = true;
+                    break;
+                }
+            }
+        }
+        this.options= checkboxItems
+    },
+    textInput(e){
+      console.log(e.detail.value)
+
+    },
+    prevq(){
+      if(this.qindex>0){
+        this.qindex--
+        this.setOption()
+      }
+    },
+    nextq(){
+      if(this.qindex<this.list.length){
+        this.qindex++
+        this.setOption()
+      }
+    }
+  }
+  onLoad(){
+    let app = getApp()
+    this.list = app.questions;
+    //初始化题目选项
+    this.setOption()
+    this.$apply()
+  }
+
+}
+</script>
+
+<style>
+#list{
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.page__bd{
+  flex: 1;
+}
+swiper{
+  height: 100%;
+}
+</style>
