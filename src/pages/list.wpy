@@ -24,11 +24,26 @@
             </view>
         </view>
       </view>
+      <view class="answer-display" hidden="{{show_board}}" @tap="close_board">
+        <view class="answer-board" @tap.stop="stop_propagation">
+          <view class="answer-total">
+            <text>已答：20/40</text>
+            <text>正确：2/20</text>
+            <text>错误：18/20</text>
+          </view>
+          <view class="answer-board-q answer-q-active">1</view>
+          <view class="answer-board-q">1</view>
+          <view class="answer-board-q answer-q-active">1</view>
+          <view class="answer-board-q answer-q-wrong">1</view>
+          <view class="answer-board-q answer-q-wrong">1</view>
+          <view class="answer-board-q">1</view>
+        </view>
+      </view>
     </view>
     <view class="weui-footer">
       <view class="button-sp-area">
         <button class="weui-btn mini-btn" plain="true" type="default" size="mini" @tap="prevq">上一题</button>
-        <button class="weui-btn mini-btn" plain="true" type="primary" size="mini">答题卡</button>
+        <button class="weui-btn mini-btn" plain="true" type="primary" size="mini" @tap="answer_board">答题卡</button>
         <button class="weui-btn mini-btn" plain="true" type="warn" size="mini">提交</button>
         <button class="weui-btn mini-btn" plain="true" type="default" size="mini" @tap="nextq">下一题</button>
       </view>
@@ -46,7 +61,8 @@ export default class List extends wepy.page{
     list:[],
     qindex: 0,
     options:[],
-    qtype:null
+    qtype:null,
+    show_board:true
   }
   setOption(){
     let arr = []
@@ -108,18 +124,19 @@ export default class List extends wepy.page{
   setAnswer(answer){
     let q = this.list[this.qindex]
     q.answer = answer
-    this.list[this.qindex] = q
-
+    this.list[this.qindex] = q;
   }
   methods={
     radioChange(e){
       var radioItems = this.options;
-        for (var i = 0, len = radioItems.length; i < len; ++i) {
-            radioItems[i].checked = radioItems[i].value == e.detail.value;
-        }
-        this.options= radioItems
+      for (var i = 0, len = radioItems.length; i < len; ++i) {
+          radioItems[i].checked = radioItems[i].value == e.detail.value;
+      }
+      this.options= radioItems
+      this.setAnswer(e.detail.value)
     },
     checkboxChange(e){
+
         var checkboxItems = this.options, values = e.detail.value;
         for (var i = 0, lenI = checkboxItems.length; i < lenI; ++i) {
             checkboxItems[i].checked = false;
@@ -131,10 +148,11 @@ export default class List extends wepy.page{
             }
         }
         this.options= checkboxItems
+        this.setAnswer(e.detail.value.join(''))
     },
     textInput(e){
-      console.log(e.detail.value)
 
+      this.setAnswer(e.detail.value)
     },
     prevq(){
       if(this.qindex>0){
@@ -147,9 +165,19 @@ export default class List extends wepy.page{
         this.qindex++
         this.setOption()
       }
-    }
+    },
+    answer_board(){
+      this.show_board = false
+    },
+    close_board(){
+      this.show_board = true
+    },
+    stop_propagation(){}
   }
-  onLoad(){
+  onLoad(options){
+    wx.setNavigationBarTitle({
+      title:options.course
+    })
     let app = getApp()
     this.list = app.questions;
     //初始化题目选项
@@ -169,7 +197,44 @@ export default class List extends wepy.page{
 .page__bd{
   flex: 1;
 }
-swiper{
-  height: 100%;
+.answer-display{
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 99;
+  width: 100%;height: 100%;
+  background: rgba(0,0,0,0.5)
+}
+.answer-board{
+  position: absolute;
+  width: 90%;
+  height: 90%;
+  border-radius: 10rpx;
+  padding: 20rpx;
+  box-sizing: border-box;
+  left: 50%;top: 50%;
+  transform: translate3d(-50%,-50%,0);
+  background: #fff;
+}
+.answer-board-q{
+  display: inline-block;
+  margin: 22rpx;
+  background: #eee;
+  color: #999;
+  font-size: 28rpx;
+  width: 60rpx;
+  height: 60rpx;
+  text-align: center;
+  line-height: 60rpx;
+  border-radius: 50%;
+}
+.answer-q-active{
+  background: #34d058;
+  color: #fff;
+}
+
+.answer-q-wrong{
+  background: #ffe3e8;
+  color: #ff6666;
 }
 </style>

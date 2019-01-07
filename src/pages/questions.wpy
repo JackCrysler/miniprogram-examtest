@@ -118,8 +118,9 @@ export default class questions extends wepy.page {
         wx.hideLoading()
         let app = getApp()
         app.questions = res.data.data.questionIdArr
+        let that = this;
         wx.navigateTo({
-          url:"./list"
+          url:"./list?course="+that.selected_course.cnname
         })
       })
     }
