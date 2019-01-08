@@ -33,10 +33,7 @@
           </view>
           <view class="answer-board-q answer-q-active">1</view>
           <view class="answer-board-q">1</view>
-          <view class="answer-board-q answer-q-active">1</view>
           <view class="answer-board-q answer-q-wrong">1</view>
-          <view class="answer-board-q answer-q-wrong">1</view>
-          <view class="answer-board-q">1</view>
         </view>
       </view>
     </view>
