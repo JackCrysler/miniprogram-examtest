@@ -19,23 +19,12 @@
         </checkbox-group>
         <view class="weui-cell" wx:else>
             <view class="weui-cell__bd">
-                <textarea @input="textInput" class="weui-textarea" placeholder="请输入文本" style="height: 3.3em" />
+                <textarea @input="textInput" value="{{text}}" class="weui-textarea" placeholder="请输入文本" style="height: 3.3em" />
                 <view class="weui-textarea-counter">0/200</view>
             </view>
         </view>
       </view>
-      <view class="answer-display" hidden="{{show_board}}" @tap="close_board">
-        <view class="answer-board" @tap.stop="stop_propagation">
-          <view class="answer-total">
-            <text>已答：20/40</text>
-            <text>正确：2/20</text>
-            <text>错误：18/20</text>
-          </view>
-          <view class="answer-board-q answer-q-active">1</view>
-          <view class="answer-board-q">1</view>
-          <view class="answer-board-q answer-q-wrong">1</view>
-        </view>
-      </view>
+      <layer></layer>
     </view>
     <view class="weui-footer">
       <view class="button-sp-area">
@@ -59,12 +48,17 @@ export default class List extends wepy.page{
     qindex: 0,
     options:[],
     qtype:null,
-    show_board:true
+    show_board:true,
+    text:''
+  }
+  components={
+    layer
   }
   setOption(){
     let arr = []
     let alpha=["A","B","C","D","E","F"];
     let stem_type = this.list[this.qindex].stem_type;
+    let answer = this.list[this.qindex].answer;
 
     if(stem_type=="0-判断" || stem_type=="1-单选"){
       this.qtype = 1
@@ -75,8 +69,8 @@ export default class List extends wepy.page{
     }
     switch (stem_type) {
       case "0-判断":
-        arr[0]={value: "A",name:"对",checked: false};
-        arr[1]={value: "B",name:"错",checked: false};
+        arr[0]={value: "A",name:"对",checked: answer=='A'};
+        arr[1]={value: "B",name:"错",checked: answer=="B"};
         break;
       case "1-单选":
           for(let i=1;i<7;i++){
@@ -85,31 +79,32 @@ export default class List extends wepy.page{
               arr.push({
                 name:option,
                 value: alpha[i-1],
-                checked: false
+                checked: answer==alpha[i-1]
               })
             }
           }
         break;
       case "2-多选":
+      answer && console.log(answer.split(''))
         for(let i=1;i<7;i++){
           let option = this.list[this.qindex]['option_'+i]
             if(option!='undefined' && option!='' && option!=null){
               arr.push({
                 name:option,
                 value: alpha[i-1],
-                checked: false
+                checked: !!answer?answer.split('').includes(alpha[i-1]):false
               })
             }
           }
         break;
       case "3-填空（人工判卷）":
-
+        this.text = answer
         break;
       case "4-问答":
-
+        this.text = answer
         break;
       case "5-填空（自动判卷）":
-
+        this.text = answer
         break;
 
       default:
@@ -164,12 +159,8 @@ export default class List extends wepy.page{
       }
     },
     answer_board(){
-      this.show_board = false
-    },
-    close_board(){
-      this.show_board = true
-    },
-    stop_propagation(){}
+      this.$broadcast('openlayer')
+    }
   }
   onLoad(options){
     wx.setNavigationBarTitle({
@@ -193,45 +184,5 @@ export default class List extends wepy.page{
 }
 .page__bd{
   flex: 1;
-}
-.answer-display{
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 99;
-  width: 100%;height: 100%;
-  background: rgba(0,0,0,0.5)
-}
-.answer-board{
-  position: absolute;
-  width: 90%;
-  height: 90%;
-  border-radius: 10rpx;
-  padding: 20rpx;
-  box-sizing: border-box;
-  left: 50%;top: 50%;
-  transform: translate3d(-50%,-50%,0);
-  background: #fff;
-}
-.answer-board-q{
-  display: inline-block;
-  margin: 22rpx;
-  background: #eee;
-  color: #999;
-  font-size: 28rpx;
-  width: 60rpx;
-  height: 60rpx;
-  text-align: center;
-  line-height: 60rpx;
-  border-radius: 50%;
-}
-.answer-q-active{
-  background: #34d058;
-  color: #fff;
-}
-
-.answer-q-wrong{
-  background: #ffe3e8;
-  color: #ff6666;
 }
 </style>

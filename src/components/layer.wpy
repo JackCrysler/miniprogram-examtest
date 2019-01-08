@@ -1,24 +1,85 @@
 <template>
-  <single-choice :q.sync="q"></single-choice>
+  <view class="answer-display" hidden="{{show_board}}" @tap="close_board">
+        <view class="answer-board" @tap.stop="stop_propagation">
+          <view class="answer-total">
+            <text>已答：20/40</text>
+            <text>正确：2/20</text>
+            <text>错误：18/20</text>
+          </view>
+          <view class="answer-board-q answer-q-active">1</view>
+          <view class="answer-board-q">1</view>
+          <view class="answer-board-q answer-q-wrong">1</view>
+        </view>
+      </view>
 </template>
 
 <script>
 import wepy from 'wepy'
-import singleChoice from './singleChoice'
 export default class Layer extends wepy.component{
-  props = {
-    q:Object
+  data = {
+    show_board:true
   }
   components={
-    "single-choice":singleChoice
+
+  }
+  events={
+    'openlayer'(){
+      this.show_board=false;
+    }
+  }
+  methods={
+    close_board(){
+      this.show_board = true
+    },
+    stop_propagation(){}
   }
   onLoad(){
-    console.log(this.q);
-    this.$apply()
+    let app = getApp()
+    console.log(app.questions)
   }
 }
 </script>
 
 <style>
+.answer-display{
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 99;
+  width: 100%;height: 100%;
+  background: rgba(0,0,0,0.5)
+}
+.answer-board{
+  position: absolute;
+  width: 90%;
+  height: 90%;
+  border-radius: 10rpx;
+  padding: 20rpx;
+  box-sizing: border-box;
+  left: 50%;top: 50%;
+  transform: translate3d(-50%,-50%,0);
+  background: #fff;
+}
+.answer-board-q{
+  display: inline-block;
+  margin: 22rpx;
+  background: #eee;
+  color: #999;
+  font-size: 28rpx;
+  width: 60rpx;
+  height: 60rpx;
+  text-align: center;
+  line-height: 60rpx;
+  border-radius: 50%;
+}
+.answer-q-active{
+  background: #34d058;
+  color: #fff;
+}
+
+.answer-q-wrong{
+  background: #ffe3e8;
+  color: #ff6666;
+}
 
 </style>
