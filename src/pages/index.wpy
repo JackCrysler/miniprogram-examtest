@@ -79,15 +79,14 @@ export default class Index extends wepy.page {
   methods = {
     getUserInfo(e) {
       let userInfo = JSON.parse(e.detail.rawData)
-
+      let app = getApp()
         if (userInfo) {
           this.userInfo = userInfo.nickName;
+          app.userinfo = userInfo
           this.$apply();
         }
       }
-  };
-
-  events = {};
+  }
   authInfo(){
     wx.getSetting({
       success(res){
@@ -130,6 +129,8 @@ export default class Index extends wepy.page {
   }
   onLoad() {
       this.fetchdata()
+      let app = getApp()
+      this.userInfo = app.userinfo && app.userinfo.nickName
   }
 }
 </script>
