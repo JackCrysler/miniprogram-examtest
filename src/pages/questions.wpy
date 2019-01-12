@@ -86,6 +86,53 @@ export default class questions extends wepy.page {
     select_end_unit: '3单元',
     select_type: '全部'
   }
+  fetchdata(){
+      let that = this;
+      wx.showLoading()
+
+      let params = {
+        'courseId': this.selected_course.id,
+        'endunit': this.select_end_unit.slice(0,1),
+        'startunit': this.select_start_unit.slice(0,1)
+      }
+      if(this.select_type!="全部"){
+        params['stem_type'] = this.select_type;
+      }
+      wepy.request({
+        url:"https://miniapp.yunkaikt.com/exam/front/getQuestionRandom",
+        data:params
+      }).then(res=>{
+        wx.hideLoading()
+        let app = getApp()
+        if(!res.data.data){
+          wx.showToast({
+            title:"该题型无数据"
+          })
+          return
+        }
+        if(res.data.code!="20001"){
+          wx.showModal({
+            title:"提示",
+            content:"查询失败，请重试。",
+            success(res) {
+              if (res.confirm) {
+                setTimeout(() => {
+                  that.fetchdata()
+                }, 300);
+              } else if (res.cancel) {
+                console.log('用户点击取消')
+              }
+            }
+          })
+          return
+        }
+        app.questions = res.data.data.questionIdArr;
+        wx.navigateTo({
+          url:"./list?course="+that.selected_course.cnname
+        })
+      })
+
+  }
   methods={
     bindPickerChange(e){
       this.selected_course = this.course_data[e.detail.value]
@@ -100,29 +147,7 @@ export default class questions extends wepy.page {
       this.select_type = this.type_arr[e.detail.value]
     },
     query(){
-
-      wx.showLoading()
-
-      let params = {
-        'courseId': this.selected_course.id,
-        'endunit': this.select_end_unit.slice(0,1),
-        'startunit': this.select_start_unit.slice(0,1)
-      }
-      if(this.select_type!="全部"){
-        params['stem_type'] = this.select_type
-      }
-      wepy.request({
-        url:"https://miniapp.yunkaikt.com/exam/front/getQuestionRandom",
-        data:params
-      }).then(res=>{
-        wx.hideLoading()
-        let app = getApp()
-        app.questions = res.data.data.questionIdArr
-        let that = this;
-        wx.navigateTo({
-          url:"./list?course="+that.selected_course.cnname
-        })
-      })
+      this.fetchdata()
     }
   }
   onLoad(options) {

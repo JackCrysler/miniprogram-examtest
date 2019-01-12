@@ -24,19 +24,23 @@
         <view class="weui-cell" wx:elif="{{qtype==3}}">
           <repeat for="{{options}}" key="{{item.id}}">
             <view class="weui-cell__bd">
-                <textarea @input="textInput" value="{{item.value}}" class="weui-textarea" placeholder="请输入答案" style="height: 3.3em" />
+                <textarea value="{{item.value}}" class="weui-textarea" placeholder="请输入答案" style="height: 3.3em" />
                 <view class="weui-textarea-counter">0/200</view>
             </view>
           </repeat>
         </view>
       </view>
-      <layer></layer>
+      <view class="weui-panel">
+            <view class="weui-panel__hd">正确答案：{{correctAnswer}}</view>
+      </view>
+      <view class="weui-panel">
+            <view class="weui-panel__hd">你的答案：{{userAnswer}}</view>
+      </view>
     </view>
     <view class="weui-footer">
       <view class="button-sp-area">
         <button class="weui-btn mini-btn" plain="true" type="default" size="mini" @tap="prevq">上一题</button>
-        <button class="weui-btn mini-btn" plain="true" type="primary" size="mini" @tap="answer_board">答题卡</button>
-        <button class="weui-btn mini-btn" plain="true" type="warn" size="mini" @tap="submit">提交</button>
+        <button class="weui-btn mini-btn" plain="true" type="default" size="mini" @tap="restart">重新刷题</button>
         <button class="weui-btn mini-btn" plain="true" type="default" size="mini" @tap="nextq">下一题</button>
       </view>
     </view>
@@ -46,27 +50,23 @@
 
 <script>
 import wepy from 'wepy'
-import layer from '../components/layer'
-
 export default class List extends wepy.page{
   data={
     list:[],
     qindex: 0,
     options:[],
     qtype:null,
-    show_board:true,
-    noop:{},
-    text:''
-  }
-  components={
-    layer
+    correctAnswer:'',
+    userAnswer:''
   }
   setOption(){
     let arr = []
     let alpha=["A","B","C","D","E","F"];
     let stem_type = this.list[this.qindex].stem_type;
-    let answer = this.list[this.qindex].answer;
-
+    // let answer = this.list[this.qindex].answer;
+    let answer = undefined;
+    this.correctAnswer = this.list[this.qindex].result.trim();
+    this.userAnswer = this.list[this.qindex].answer ? this.list[this.qindex].answer.trim():'未答题';
     if(stem_type=="0-判断" || stem_type=="1-单选"){
       this.qtype = 1
     }else if(stem_type=="2-多选"){
@@ -130,73 +130,39 @@ export default class List extends wepy.page{
     this.options = arr;
     this.$apply()
   }
-  setAnswer(answer){
-
-    let q = this.list[this.qindex]
-    q.answer = answer;
-    this.list[this.qindex] = q;
-  }
-  events={
-    choseq(data){
-      this.qindex = data-1
-      this.setOption()
-    }
-  }
   methods={
     radioChange(e){
-      var radioItems = this.options;
-      for (var i = 0, len = radioItems.length; i < len; ++i) {
-          radioItems[i].checked = radioItems[i].value == e.detail.value;
-      }
-      this.options= radioItems
-      this.setAnswer(e.detail.value)
+
     },
     checkboxChange(e){
-        var checkboxItems = this.options, values = e.detail.value;
-        for (var i = 0, lenI = checkboxItems.length; i < lenI; ++i) {
-            checkboxItems[i].checked = false;
-            for (var j = 0, lenJ = values.length; j < lenJ; ++j) {
-                if(checkboxItems[i].value == values[j]){
-                    checkboxItems[i].checked = true;
-                    break;
-                }
-            }
-        }
-        this.options= checkboxItems
-        this.setAnswer(e.detail.value.sort().join(''))
+
+
     },
-    textInput(e){
-      this.setAnswer(e.detail.value.trim())
+    restart(){
+      wepy.navigateTo({
+        url:'./index'
+      })
     },
     prevq(){
       if(this.qindex>0){
         this.qindex--;
-
         this.setOption()
       }
     },
     nextq(){
       if(this.qindex<this.list.length){
         this.qindex++;
-
         this.setOption()
       }
-    },
-    answer_board(){
-      this.$broadcast('openlayer')
-    },
-    submit(){
-      wepy.navigateTo({
-        url:'./feedback'
-      })
     }
   }
   onLoad(options){
     wx.setNavigationBarTitle({
-      title:options.course
+      title:'错题回顾'
     })
     let app = getApp()
-    this.list = app.questions;
+    this.list = app.questions.filter(item=>!item.answer || item.answer.trim() != item.result.trim());
+
     //初始化题目选项
     this.setOption()
     this.$apply()

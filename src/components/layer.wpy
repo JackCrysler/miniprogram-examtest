@@ -1,15 +1,17 @@
 <template>
-  <view class="answer-display" hidden="{{show_board}}" @tap="close_board">
-        <view class="answer-board" @tap.stop="stop_propagation">
+  <view class="answer-display" hidden="{{hide_board}}" @tap="close_board">
+        <scroll-view scroll-y class="answer-board" @tap.stop="stop_propagation">
           <view class="answer-total">
-            <text>已答：20/40</text>
-            <text>正确：2/20</text>
-            <text>错误：18/20</text>
+            <text class="answer-count">已答:{{correct+wrong}}/{{total}} </text>
+            <text class="answer-count">正确:{{correct}}/{{correct+wrong}} </text>
+            <text class="answer-count">错误:{{wrong}}/{{correct+wrong}}</text>
           </view>
-          <view class="answer-board-q answer-q-active">1</view>
-          <view class="answer-board-q">1</view>
-          <view class="answer-board-q answer-q-wrong">1</view>
-        </view>
+          <view class="answer-qs">
+            <repeat for="{{qlist}}" key="{{index}}">
+              <view class="{{item.status}}" @tap="goto({{item.qindex}})">{{item.qindex}}</view>
+            </repeat>
+          </view>
+        </scroll-view>
       </view>
 </template>
 
@@ -17,25 +19,46 @@
 import wepy from 'wepy'
 export default class Layer extends wepy.component{
   data = {
-    show_board:true
+    hide_board:true,
+    total:0,
+    correct:0,
+    wrong:0,
+    qlist:[]
   }
   components={
 
   }
   events={
     'openlayer'(){
-      this.show_board=false;
+      this.hide_board=false;
+      let app = getApp()
+      let qlist = [...app.questions];
+      this.qlist = qlist.map((item,index)=>{
+        item.answer && console.log(item.answer.trim(),item.result.trim())
+        return {
+          qindex:index+1,
+          status: item.answer? (item.answer.trim()==item.result.trim()?'answer-board-q answer-q-correct':'answer-board-q answer-q-wrong'): 'answer-board-q'
+        }
+      });
+
+      this.correct = qlist.filter(item=>item.answer && item.answer.trim() == item.result.trim()).length
+      this.wrong = qlist.filter(item=>item.answer && item.answer.trim() != item.result.trim()).length
+
     }
   }
   methods={
     close_board(){
-      this.show_board = true
+      this.hide_board = true
     },
-    stop_propagation(){}
+    stop_propagation(){},
+    goto(qindex){
+      this.hide_board = true;
+      this.$emit('choseq',qindex)
+    }
   }
   onLoad(){
-    let app = getApp()
-    console.log(app.questions)
+    let app = getApp();
+    this.total = app.questions.length;
   }
 }
 </script>
@@ -60,19 +83,29 @@ export default class Layer extends wepy.component{
   transform: translate3d(-50%,-50%,0);
   background: #fff;
 }
+.answer-total{
+  display: flex;
+  border-bottom: 1px solid #f3f3f3;
+  padding-bottom: 20rpx;
+}
+.answer-count{
+  white-space: nowrap;
+  flex: 1;
+  text-align: center
+}
 .answer-board-q{
   display: inline-block;
-  margin: 22rpx;
+  margin: 18rpx 22rpx;
   background: #eee;
   color: #999;
   font-size: 28rpx;
-  width: 60rpx;
-  height: 60rpx;
+  width: 80rpx;
+  height: 80rpx;
   text-align: center;
-  line-height: 60rpx;
+  line-height: 80rpx;
   border-radius: 50%;
 }
-.answer-q-active{
+.answer-q-correct{
   background: #34d058;
   color: #fff;
 }

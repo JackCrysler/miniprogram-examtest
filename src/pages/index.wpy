@@ -98,8 +98,8 @@ export default class Index extends wepy.page {
       }
     })
   }
-  onLoad() {
-    //this.authInfo()
+  fetchdata(){
+    let that =this;
     wx.showLoading({
       title:"正在获取数据"
     });
@@ -114,12 +114,22 @@ export default class Index extends wepy.page {
       err => {
         wx.showModal({
           title: '提示',
-          content: '服务器出错，请稍后重试'
+          content: '服务器出错，请稍后重试',
+          success(res) {
+            if (res.confirm) {
+              that.fetchdata()
+            } else if (res.cancel) {
+              console.log('用户点击取消')
+            }
+          }
         });
         wx.hideLoading();
         console.log(err);
       }
     );
+  }
+  onLoad() {
+      this.fetchdata()
   }
 }
 </script>

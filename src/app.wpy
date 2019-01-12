@@ -17,7 +17,8 @@ export default class extends wepy.app {
     pages: [
       'pages/index',
       'pages/questions',
-      'pages/list'
+      'pages/list',
+      'pages/feedback'
     ],
     window: {
       backgroundTextStyle: 'light',
