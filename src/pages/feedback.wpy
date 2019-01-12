@@ -60,9 +60,11 @@ export default class List extends wepy.page{
     userAnswer:''
   }
   setOption(){
+    if(!this.list[this.qindex]) return;
     let arr = []
     let alpha=["A","B","C","D","E","F"];
     let stem_type = this.list[this.qindex].stem_type;
+
     // let answer = this.list[this.qindex].answer;
     let answer = undefined;
     this.correctAnswer = this.list[this.qindex].result.trim();

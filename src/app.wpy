@@ -43,7 +43,9 @@ export default class extends wepy.app {
   }
 
   onLaunch() {
-
+    wx.showShareMenu({
+      withShareTicket: true
+    })
   }
 
 }

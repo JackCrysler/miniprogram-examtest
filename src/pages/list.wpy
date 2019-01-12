@@ -62,6 +62,7 @@ export default class List extends wepy.page{
     layer
   }
   setOption(){
+    if(!this.list[this.qindex]) return;
     let arr = []
     let alpha=["A","B","C","D","E","F"];
     let stem_type = this.list[this.qindex].stem_type;

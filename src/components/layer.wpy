@@ -34,7 +34,7 @@ export default class Layer extends wepy.component{
       let app = getApp()
       let qlist = [...app.questions];
       this.qlist = qlist.map((item,index)=>{
-        item.answer && console.log(item.answer.trim(),item.result.trim())
+        //item.answer && console.log(item.answer.trim(),item.result.trim())
         return {
           qindex:index+1,
           status: item.answer? (item.answer.trim()==item.result.trim()?'answer-board-q answer-q-correct':'answer-board-q answer-q-wrong'): 'answer-board-q'
@@ -95,7 +95,7 @@ export default class Layer extends wepy.component{
 }
 .answer-board-q{
   display: inline-block;
-  margin: 18rpx 22rpx;
+  margin: 16rpx 22rpx;
   background: #eee;
   color: #999;
   font-size: 28rpx;

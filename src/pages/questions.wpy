@@ -88,7 +88,9 @@ export default class questions extends wepy.page {
   }
   fetchdata(){
       let that = this;
-      wx.showLoading()
+      wx.showLoading({
+        title:"正在获取数据"
+      })
 
       let params = {
         'courseId': this.selected_course.id,
